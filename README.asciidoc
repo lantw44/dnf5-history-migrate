@@ -1,0 +1,37 @@
+= DNF 5 history database migration tool
+
+Migrate DNF 4 history database `/var/lib/dnf/history.sqlite` to DNF 5
+history database `/usr/lib/sysimage/libdnf5/transaction_history.sqlite`.
+
+DNF 5 provides no official migration tool. Consider this program a quick and
+dirty solution to unblock DNF 5 migration if you value your history database.
+
+
+== Usage
+
+Use it in the initial state only.
+
+. Ensure `/usr/lib/sysimage/libdnf5` exists and is an empty directory.
+. Run `dnf5 list` to migrate the system state from DNF 4.
+. Run `dnf5 history list` to create an empty history database.
+. Run `go build .` to build the migration tool.
+. Run `dnf5-history-migrate <source> <target>` to migrate the history database
+  from DNF 4.
+
+
+== Caveats
+
+Not all data can be migrated. DNF 5 removes `console_output` and `trans_with`
+tables, so these tables can't be migrated. Don't delete the DNF 4 history
+database after migration unless you can accept data loss.
+
+DNF 4 shows `user_id` -1 as System <unset>, but DNF 5 shows it as 4294967295.
+The migration tool does write -1 to the database, so it is DNF 5 that doesn't
+handle the special case.
+
+
+== License
+
+LGPL 2.1 or later since many things are copied from
+https://github.com/rpm-software-management/libdnf[DNF 4 libdnf] and
+https://github.com/rpm-software-management/dnf5[DNF 5 libdnf5].
