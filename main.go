@@ -7,49 +7,10 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/lantw44/dnf5-history-migrate/check"
 	"github.com/lantw44/dnf5-history-migrate/migrate"
 	_ "modernc.org/sqlite"
 )
-
-func checkConfig4(ctx context.Context, db *sql.DB) bool {
-	const query = "SELECT value FROM config WHERE key = 'version'"
-	const expected = "1.2"
-	var actual string
-
-	row := db.QueryRowContext(ctx, query)
-	err := row.Scan(&actual)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Read DNF 4 database version error: %v\n", err)
-		return false
-	}
-
-	if actual != expected {
-		fmt.Fprintf(os.Stderr, "Bad DNF 4 database version %s (should be %s)\n",
-			actual, expected)
-		return false
-	}
-	return true
-}
-
-func checkConfig5(ctx context.Context, db *sql.DB) bool {
-	const query = "SELECT value FROM config WHERE key = 'version'"
-	const expected = "1.1"
-	var actual string
-
-	row := db.QueryRowContext(ctx, query)
-	err := row.Scan(&actual)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Read DNF 5 database version error: %v\n", err)
-		return false
-	}
-
-	if actual != expected {
-		fmt.Fprintf(os.Stderr, "Bad DNF 5 database version %s (should be %s)\n",
-			actual, expected)
-		return false
-	}
-	return true
-}
 
 func main2() int {
 	flag.Parse()
@@ -68,8 +29,7 @@ func main2() int {
 	}
 	defer db4.Close()
 
-	config4 := checkConfig4(ctx, db4)
-	if !config4 {
+	if !check.CheckConfig4(ctx, db4) {
 		return 2
 	}
 
@@ -80,8 +40,7 @@ func main2() int {
 	}
 	defer db5.Close()
 
-	config5 := checkConfig5(ctx, db5)
-	if !config5 {
+	if !check.CheckConfig5(ctx, db5) {
 		return 2
 	}
 
@@ -89,6 +48,10 @@ func main2() int {
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		return 3
+	}
+
+	if !check.CheckSQLiteSequence(ctx, db4, db5) {
+		return 4
 	}
 	return 0
 }
