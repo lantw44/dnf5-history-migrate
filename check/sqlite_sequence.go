@@ -43,7 +43,6 @@ func CheckSQLiteSequence(ctx context.Context, db4 *sql.DB, db5 *sql.DB) bool {
 			fmt.Fprintf(os.Stderr, "sqlite_sequence %s error: %d (DNF 4) ≠ %d (DNF 5)\n",
 				name, seq4, seq5)
 			return false
-
 		}
 	}
 	return true
