@@ -3,6 +3,7 @@ package check
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"os"
 )
@@ -26,6 +27,9 @@ func CheckSQLiteSequence(ctx context.Context, db4 *sql.DB, db5 *sql.DB) bool {
 
 	for _, name := range names {
 		seq4, err := readSQLiteSequence(ctx, db4, name)
+		if errors.Is(err, sql.ErrNoRows) {
+			continue
+		}
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Read DNF 4 sqlite_sequence %s error: %v\n",
 				name, err)
